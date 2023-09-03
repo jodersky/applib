@@ -1,0 +1,47 @@
+case class MyCfg(
+  hello: Int,
+  arrint: Seq[Seq[Int]],
+  nested: Nested
+) derives confuse.Reader
+  // require(hello == "worlxd", "noo")
+
+case class Nested(a: String) derives confuse.Reader
+
+object Main:
+
+  def main(args: Array[String]): Unit =
+    // confuse.watch(
+    //   List(os.sub / "foo.yaml"),
+    //   onPreUpdate = changed =>
+    //     System.err.println("changed paths " + changed),
+    //   onUpdate = (oldcfg, newcfg) =>
+    //     newcfg.dumpInto(),
+    //   onError = err => System.err.println(err.getMessage())
+    // )
+
+    val cfg = confuse.read(List(os.sub / "foo.yaml"))
+
+    // // cfg.set("foo", "ok")
+    println(cfg.dump())
+
+
+    // println("----")
+
+
+    // println(cfg.unmarshal[MyCfg]())
+
+    // println(cfg.getAs[MyCfg]())
+
+    println(cfg.getValue("hello").get[String]())
+    println(cfg.get[MyCfg]())
+    // println(cfg.getValue("hello").getAs[Int]())
+// //
+//     println(mapTo[Option[String]](cfg, List("hello")))
+
+
+//     // println(mapTo[List[String]](cfg, List("strmap")))
+//     println(mapTo[Map[String, Value]](cfg, List("strmap")))
+
+    // cfg.unmarshal[List[Int]]()
+//
+    // api.mapTo[Int]
