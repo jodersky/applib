@@ -47,7 +47,6 @@ trait StandardStringReaders extends StringReaderApi with LowPrioStringReaders:
         case _: NumberFormatException => Result.Error(s"not a number")
     def typeName: String = "float"
 
-
   given pathReader: StringReader[os.FilePath] with
     def read(a: String) =
       try

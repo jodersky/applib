@@ -1,4 +1,4 @@
-package clam
+package clam.macros
 
 case class DocComment(paragraphs: Iterable[String], params: collection.Map[String, String])
 
@@ -58,13 +58,3 @@ object DocComment:
 
     DocComment(mainDoc, params)
   end extract
-
-
-  import quoted.Expr, quoted.Varargs, quoted.Type, quoted.Quotes
-
-  inline given DocComment = ${here}
-
-  def here(using qctx: Quotes): Expr[DocComment] =
-    import qctx.reflect.*
-    val s = Symbol.spliceOwner.owner.docstring.getOrElse("")
-    '{extract(${Expr(s)})}

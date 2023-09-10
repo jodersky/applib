@@ -33,9 +33,11 @@ object DerivationTest extends TestSuite:
   // enum NestedEnum derives api.Subcommand:
   //   case Cool()
 
+  object custom extends clam.api.Api
+
   val tests = Tests{
     test("empty"){
-      case class Cli() derives clam.default.Command
+      case class Cli() derives clam.Command
       val result = clam.Command[Cli].parse(List())
       assert(result == Success(Cli()))
     }
@@ -43,14 +45,14 @@ object DerivationTest extends TestSuite:
       case class Cli(
         pos1: String,
         pos2: Int
-      ) derives clam.default.Command
+      ) derives clam.Command
       assert(clam.Command[Cli].parse(List("pos1", "2")) == Success(Cli("pos1", 2)))
     }
     test("named"){
       case class Cli(
         param1: String = "",
         param2: Int = 42
-      ) derives clam.default.Command
+      ) derives clam.Command
       assert(clam.Command[Cli].parse(List("--param1", "a", "--param2=1")) == Success(Cli("a", 1)))
       assert(clam.Command[Cli].parse(List("--param1", "a")) == Success(Cli("a", 42)))
       assert(clam.Command[Cli].parse(List("--param2=1")) == Success(Cli("", 1)))
@@ -61,7 +63,7 @@ object DerivationTest extends TestSuite:
         param1: String = "",
         param2: Int = 42,
         subcmd: SubCli
-      ) derives clam.default.Command
+      ) derives clam.Command
       assert(clam.Command[Cli].parse(List("--param1", "a", "--param2=1", "foo", "a")) == Success(Cli("a", 1, SubCli.Foo("a"))))
       assert(clam.Command[Cli].parse(List("--param1", "a", "--param2=1", "bar", "2")) == Success(Cli("a", 1, SubCli.Bar(2))))
       assert(clam.Command[Cli].parse(List("--param1", "a", "--param2=1", "baz")) == Success(Cli("a", 1, SubCli.Baz())))
@@ -69,7 +71,7 @@ object DerivationTest extends TestSuite:
   }
 
   // Note: there's a bug in the test macro that prevents this from being defined in the macro
-  enum SubCli derives clam.default.Subcommand:
+  enum SubCli derives clam.Subcommand:
     case Foo(x: String)
     case Bar(y: Int)
     case Baz()

@@ -1,5 +1,5 @@
-package clam
+package clam.api
 
 trait Api extends DerivationApi with StandardReaders
 
-object default extends Api
+object DefaultApi extends Api

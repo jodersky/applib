@@ -8,14 +8,14 @@ case class Output(stream: java.io.PrintStream, color: Boolean):
       stream.println(message)
 
 object Output:
-  given clam.default.Parser[Output] with
+  given clam.Parser[Output] with
     def paramDefs: Vector[clam.GetOpt.Param] = Vector(
       clam.GetOpt.Param("--no-color", flag = true)
     )
     def paramInfos: Vector[clam.ParamInfo] = Vector(
       clam.ParamInfo(true, Seq("--no-color"), argName = None, repeats = false, "no color", _ => Seq(), clam.BashCompleter.Empty)
     )
-    def subcommands: Map[String, clam.default.Command[?]] = Map.empty
+    def subcommands: Map[String, clam.Command[?]] = Map.empty
     def extract(ctx: clam.ParseContext, reporter: clam.Reporter, args: clam.GetOpt.Result) =
       val shouldColor =
         args.knownArgs("--no-color").isEmpty &&
@@ -27,14 +27,14 @@ object Output:
 case class Verbosity(level: Int)
 object Verbosity:
 
-  given clam.default.Parser[Verbosity] with
+  given clam.Parser[Verbosity] with
     def paramDefs: Vector[clam.GetOpt.Param] = Vector(
       clam.GetOpt.Param("-v", flag = true)
     )
     def paramInfos: Vector[clam.ParamInfo] = Vector(
       clam.ParamInfo(true, Seq("-v"), argName = None, repeats = false, "verbosity", _ => Seq(), clam.BashCompleter.Empty)
     )
-    def subcommands: Map[String, clam.default.Command[?]] = Map.empty
+    def subcommands: Map[String, clam.Command[?]] = Map.empty
     def extract(ctx: clam.ParseContext, reporter: clam.Reporter, args: clam.GetOpt.Result) =
       clam.Result.Success(Verbosity(args.knownArgs("-v").size))
 
@@ -50,13 +50,13 @@ case class Cli(
   server: String = "localhost",
   @clam.param(aliases = Seq("-c")) config: Seq[os.FilePath] = Seq(),
   @clam.param(aliases = Seq("-D")) define: Seq[(String, String)] = Seq()
-) derives clam.default.Command
+) derives clam.Command
 
 
 case class Settings(
   x: Int,
   // date: java.time.Instant
-) derives confuse.default.Reader
+) derives confuse.Reader
 
 
 def main(args: Array[String]): Unit =

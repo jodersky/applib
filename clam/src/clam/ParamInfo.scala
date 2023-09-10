@@ -9,6 +9,6 @@ case class ParamInfo(
     description: String,
     interactiveCompleter: String => Seq[String],
     standaloneCompleter: BashCompleter
-) {
+):
   def isFlag = isNamed && argName == None
-}
+
