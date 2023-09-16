@@ -1,13 +1,7 @@
-package confuse.filereaders
+package confuse.formats
 
-import confuse.Arr
-import confuse.Config
-import confuse.FileReader
-import confuse.Origin
-import confuse.Null
-import confuse.Str
-import confuse.Value
-import confuse.FileReader.Result
+import confuse.model.*
+import FileReader.Result
 import yamlesque.Ctx
 import yamlesque.ObjectVisitor
 import yamlesque.ArrayVisitor

@@ -1,11 +1,8 @@
-package confuse.filereaders
+package confuse.formats
 
-import confuse.Config
-import confuse.FileReader
-import confuse.FileReader.Result
-import confuse.Origin
-import confuse.Value
-import confuse.FileReader.Result
+import confuse.model.Config
+import confuse.model.Origin
+import FileReader.Result
 
 object PropsReader extends FileReader:
 

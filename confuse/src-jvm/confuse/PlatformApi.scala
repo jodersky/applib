@@ -1,4 +1,9 @@
-package confuse
+package confuse.api
+
+import confuse.Config
+import confuse.FileReader
+import confuse.ReadException
+import confuse.Watcher
 
 trait PlatformApi:
   self: MainApi =>

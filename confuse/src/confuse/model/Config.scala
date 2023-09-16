@@ -1,4 +1,5 @@
-package confuse
+package confuse.model
+
 
 import collection.mutable
 import confuse.util.SourcePos
@@ -133,33 +134,33 @@ case class Config(fields: mutable.LinkedHashMap[String, Value] = mutable.LinkedH
     setValue(path.split('.').toList, value)
 
   def set(path: String, value: String, origin: Origin = null)(using here: SourcePos): Unit =
-    val origin1 = if origin != null then origin else here.toOrigin
+    val origin1 = if origin != null then origin else Origin.Code(here.path, here.row, here.col)
     val v = Str(value)
     v.origins = List(origin1)
     setValue(path, v)
 
   def remove(path: String, origin: Origin = null)(using here: SourcePos): Unit =
-    val origin1 = if origin != null then origin else here.toOrigin
+    val origin1 = if origin != null then origin else Origin.Code(here.path, here.row, here.col)
     val v = Null()
     v.origins = List(origin1)
     setValue(path, v)
 
-  def unmarshal[A](using reader: confuse.api.ReaderApi#Reader[A]): A = reader.read(this, Nil) match
-    case Result.Success(a) => a
-    case Result.Error(errors) =>
-        val err = for e <- errors yield e.pretty
-        throw ReadException(err.mkString("\n", "\n", ""))
+  // def unmarshal[A](using reader: confuse.api.ReaderApi#Reader[A]): A = reader.read(this, Nil) match
+  //   case Result.Success(a) => a
+  //   case Result.Error(errors) =>
+  //       val err = for e <- errors yield e.pretty
+  //       throw ReadException(err.mkString("\n", "\n", ""))
 
 
-  def unmarshalOrExit[A](
-    stderr: java.io.PrintStream = System.err,
-    exit: Int => Nothing = sys.exit
-  )(using reader: confuse.api.ReaderApi#Reader[A]): A =
-    reader.read(this, Nil) match
-      case Result.Success(a) => a
-      case Result.Error(errs) =>
-        for err <- errs do stderr.println(err.pretty)
-        exit(1)
+  // def unmarshalOrExit[A](
+  //   stderr: java.io.PrintStream = System.err,
+  //   exit: Int => Nothing = sys.exit
+  // )(using reader: confuse.api.ReaderApi#Reader[A]): A =
+  //   reader.read(this, Nil) match
+  //     case Result.Success(a) => a
+  //     case Result.Error(errs) =>
+  //       for err <- errs do stderr.println(err.pretty)
+  //       exit(1)
 
   // def get(path: List[String]): Value =
   //   path match

@@ -1,20 +1,12 @@
-package confuse.filereaders
+package confuse.formats
 
-import confuse.Config
-import confuse.FileReader
-import confuse.FileReader.Result
-import confuse.Origin
-import confuse.Value
-import confuse.Null
-import confuse.Str
-import confuse.Arr
+import confuse.model.*
+import FileReader.Result
 import upickle.core.Visitor
-import confuse.{Value, Str, Arr}
 import confuse.util.TextUtils
 import java.io.InputStream
 
-object JsonReader extends confuse.FileReader:
-  import FileReader.Result
+object JsonReader extends FileReader:
 
   class ValueVisitor(name: String, ls: TextUtils.LocationStream) extends ujson.JsVisitor[Value, Value]:
     vv =>

@@ -13,12 +13,25 @@ case class Cli(
   param1: String = "foo"
   param2: Int
 ) derives clam.default.Command
+
+
 ```
 
 ## Maven Coordinates
 
 ```scala
 ivy"io.crashbox::clam::0.0.1"
+```
+
+## Structure
+
+```mermaid
+flowchart LR
+  clam .-> |export| clam.derivation;
+  clam.derivation --> clam.completion;
+  clam.derivation --> clam.getopt
+  clam.derivation --> clam.readers
+  clam.readers --> clam.core
 ```
 
 ## How It Works

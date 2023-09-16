@@ -1,13 +1,8 @@
-package confuse.filereaders
+package confuse.formats
 
+import confuse.model.*
+import FileReader.Result
 import confuse.ini
-import confuse.Config
-import confuse.FileReader
-import confuse.FileReader.Result
-import confuse.Origin
-import confuse.Value
-import confuse.Null
-import confuse.Str
 import confuse.ini.Pos
 import java.io.InputStream
 

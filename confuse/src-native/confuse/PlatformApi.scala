@@ -1,4 +1,4 @@
-package confuse
+package confuse.api
 
 trait PlatformApi:
   self: MainApi =>

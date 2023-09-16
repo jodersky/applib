@@ -1,13 +1,7 @@
-package confuse.filereaders
+package confuse.formats
 
-import confuse.Arr
-import confuse.Config
-import confuse.FileReader
-import confuse.FileReader.Result
-import confuse.Null
-import confuse.Origin
-import confuse.Str
-import confuse.Value
+import confuse.model.*
+import FileReader.Result
 import java.io.InputStream
 import org.ekrich.config
 

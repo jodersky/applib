@@ -1,0 +1,22 @@
+baseURL = 'http://example.org/'
+languageCode = 'en-us'
+title = "Appkit"
+
+
+[module]
+proxy = "direct"
+[[module.mounts]]
+source="content"
+target="content"
+
+[[module.mounts]]
+source="../clam/docs"
+target="content/docs/clam"
+
+[[module.mounts]]
+source="../confuse/docs"
+target="content/docs/confuse"
+[[module.imports]]
+path = "github.com/google/docsy"
+[[module.imports]]
+path = "github.com/google/docsy/dependencies"
