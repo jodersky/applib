@@ -4,7 +4,7 @@ val scala3 = "3.2.2"
 val scalaNative = "0.4.14"
 
 trait Publish extends PublishModule {
-  def publishVersion = "0.0.1" // gitVersion()
+  def publishVersion = "0.1.0" // gitVersion()
   def pomSettings = PomSettings(
     description = "appkit",
     organization = "io.crashbox",
@@ -26,9 +26,6 @@ trait Utest extends TestModule {
 }
 
 // Command Line Argument Mapper
-//
-// Wikipedia: Clams are shellfish that make up an important part of the web of
-// life that keeps the seas functioning
 object clam extends Module {
   trait ClamModule extends ScalaModule with ScalafmtModule with Publish {
     def scalaVersion = scala3
