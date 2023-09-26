@@ -7,7 +7,7 @@ object PrecedenceTest extends TestSuite {
   val tests = Tests {
     test("precedence") {
       val root = os.pwd / "confuse" / "test" / "resources" / "precedence"
-      val cfg = confuse.default.read(
+      val cfg = confuse.read(
         Seq(os.sub / "dir", os.sub / "file.json"),
         pwd = root,
         env = Map(

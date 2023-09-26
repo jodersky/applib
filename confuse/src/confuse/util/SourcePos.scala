@@ -1,13 +1,10 @@
 package confuse.util
 
-import confuse.Origin
-
 case class SourcePos(
   path: String,
   row: Int,
   col: Int
-):
-  def toOrigin: Origin = Origin.Code(path, row, col)
+)
 
 object SourcePos:
   inline given SourcePos = here

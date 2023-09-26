@@ -1,4 +1,7 @@
-x: 2
-# data:
-#  a: b
-#  c: d
+x: 1
+data:
+ a:
+  name: a
+  value: 3
+ c:
+  name: a

@@ -1,8 +1,10 @@
 package confuse.model
 
-case class Path(segments: List[String] = Nil):
+case class Path(segments: Vector[String] = Vector()):
   override def toString(): String = segments.mkString(".")
 
+  def /(segment: String): Path = Path(segments :+ segment)
+
 object Path:
-  given Conversion[List[String], Path] = ls => Path(ls)
-  given Conversion[String, Path] = s => Path(s.split('.').toList)
+  given Conversion[Iterable[String], Path] = ls => Path(ls.toVector)
+  given Conversion[String, Path] = s => Path(s.split('.').toVector)

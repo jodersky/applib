@@ -1,8 +1,8 @@
 package confuse.api
 
-import confuse.Config
-import confuse.FileReader
-import confuse.ReadException
+import confuse.model.Config
+import confuse.formats.FileReader
+import confuse.api.ReadException
 import confuse.Watcher
 
 trait PlatformApi:

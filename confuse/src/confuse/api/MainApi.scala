@@ -1,10 +1,9 @@
 package confuse.api
 
-import confuse.FileReader
-import confuse.ReadException
-import confuse.Config
-import confuse.Origin
-import confuse.filereaders
+import confuse.formats
+import confuse.formats.FileReader
+import confuse.model.Config
+import confuse.model.Origin
 
 trait MainApi extends PlatformApi:
 
@@ -13,12 +12,12 @@ trait MainApi extends PlatformApi:
     * This can be overridden to globally change the behavior instead of
     * overriding it in every call of `read`. */
   def defaultReaders: Map[String, FileReader] = Map(
-    "json" -> filereaders.JsonReader,
-    "yaml" -> filereaders.YamlReader,
-    "properties" -> filereaders.PropsReader,
-    "conf" -> filereaders.HoconReader,
-    "ini" -> filereaders.IniReader,
-    "" -> filereaders.IniReader
+    "json" -> formats.JsonReader,
+    "yaml" -> formats.YamlReader,
+    "properties" -> formats.PropsReader,
+    "conf" -> formats.HoconReader,
+    "ini" -> formats.IniReader,
+    "" -> formats.IniReader
   )
 
   /** A function to transform the name of an environment variable into a
@@ -146,7 +145,7 @@ trait MainApi extends PlatformApi:
   def read(
     paths: Iterable[os.FilePath] = Seq(),
     pwd: os.Path = os.pwd,
-    readers: Map[String, FileReader] = Map(),
+    readers: Map[String, formats.FileReader] = Map(),
     env: Map[String, String] = sys.env,
     envPrefix: String = null,
     envKeyReplacer: String => String = defaultEnvKeyReplacer,
@@ -157,11 +156,11 @@ trait MainApi extends PlatformApi:
     args: Iterable[(String, String)] = Map(),
     dest: Config = Config()
   ): Config =
-    def readfile(file: os.FilePath, reader: FileReader) =
+    def readfile(file: os.FilePath, reader: formats.FileReader) =
       val abs = os.Path(file, pwd)
 
-      if !os.exists(abs) then throw ReadException(s"Config file $file does not exist.")
-      if !os.isFile(abs) then throw ReadException(s"Config file $file is not a file.")
+      if !os.exists(abs) then throw ReadException(s"config file $file does not exist.")
+      if !os.isFile(abs) then throw ReadException(s"config file $file is not a file.")
       var stream: java.io.InputStream = null
       val result =
         try
@@ -183,7 +182,7 @@ trait MainApi extends PlatformApi:
           val line1 = if line == "" then "" else ("\n" + line)
           val caret = if col > 0 && line != "" then "\n" + " " * (col - 1) + "^" else ""
 
-          throw ReadException(s"Error parsing config file $pos: $message$line1$caret")
+          throw ReadException(s"error parsing config file $pos: $message$line1$caret")
         case FileReader.Result.Success(obj) =>
           dest.mergeFrom(obj)
 
@@ -208,7 +207,7 @@ trait MainApi extends PlatformApi:
       else
         val reader = allReaders.getOrElse(
           root.ext.toLowerCase(),
-          throw ReadException(s"Config file ${root} has an unknown format. Allowed file extensions are ${allReaders.keySet.mkString(", ")}")
+          throw ReadException(s"config file ${root} has an unknown format. Allowed file extensions are ${allReaders.keySet.mkString(", ")}")
         )
         readfile(root, reader)
 
@@ -241,7 +240,3 @@ trait MainApi extends PlatformApi:
     dest
 
   end read
-
-  // def unmarshal[A](config: Config)(using Reader[A]) = ???
-
-

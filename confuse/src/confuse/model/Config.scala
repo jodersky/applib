@@ -12,6 +12,7 @@ sealed trait Terminal extends Value
 
 sealed trait Value:
 
+  /** All origins that were used to get this value. */
   var origins: List[Origin] = Nil
 
   def flatten(path: Path = Nil): mutable.LinkedHashMap[String, Terminal] =
@@ -47,28 +48,44 @@ sealed trait Value:
     dumpInto(path, java.io.PrintStream(baos))
     new String(baos.toByteArray(), "utf-8")
 
-  def getValue(path: Path): Value =
-    path.segments match
-      case Nil => this
-      case head :: tail =>
-        this match
-          case Config(fields) =>
-            fields.get(head) match
-              case None => Null()
-              case Some(f) => f.getValue(tail)
-          case Arr(elems) =>
-            head.toIntOption match
-              case Some(idx) if 0 <= idx && idx < elems.size =>
-                elems(idx).getValue(tail)
-              case _ =>
-                Null()
-          case _ => Null()
+  // def getValue(path: Path): Value =
+  //   path.segments match
+  //     case Nil => this
+  //     case head :: tail =>
+  //       this match
+  //         case Config(fields) =>
+  //           fields.get(head) match
+  //             case None => Null()
+  //             case Some(f) => f.getValue(tail)
+  //         case Arr(elems) =>
+  //           head.toIntOption match
+  //             case Some(idx) if 0 <= idx && idx < elems.size =>
+  //               elems(idx).getValue(tail)
+  //             case _ =>
+  //               Null()
+  //         case _ => Null()
 
   // def get[A](path: Path = Nil)(using reader: Reader[A]): A = reader.read(getValue(path), path.segments) match
   //   case Result.Success(a) => a
   //   case Result.Error(errors) =>
   //     val err = for e <- errors yield e.pretty + "\n"
   //     throw ReadException(err.mkString("\n", "\n", ""))
+
+  def parse[A]()(using p: confuse.parsers.DerivationApi#Parser[A]): confuse.parsers.Result[A] =
+    p.parse(this, Nil)
+
+  def parseOrExit[A](
+    exit: () => Nothing = () => sys.exit(1),
+    stderr: java.io.PrintStream = System.err
+  )(using p: confuse.parsers.DerivationApi#Parser[A]): A =
+    parse[A]() match
+      case confuse.parsers.Result.Success(a) => a
+      case confuse.parsers.Result.FieldErrors(errs) =>
+        for err <- errs do
+          stderr.println(err.pretty)
+        exit()
+
+
 
 
 /** The null value. Indicates that a value has not been set or explicitly set to null. */
@@ -139,11 +156,11 @@ case class Config(fields: mutable.LinkedHashMap[String, Value] = mutable.LinkedH
     v.origins = List(origin1)
     setValue(path, v)
 
-  def remove(path: String, origin: Origin = null)(using here: SourcePos): Unit =
-    val origin1 = if origin != null then origin else Origin.Code(here.path, here.row, here.col)
-    val v = Null()
-    v.origins = List(origin1)
-    setValue(path, v)
+  // def remove(path: String, origin: Origin = null)(using here: SourcePos): Unit =
+  //   val origin1 = if origin != null then origin else Origin.Code(here.path, here.row, here.col)
+  //   val v = Null()
+  //   v.origins = List(origin1)
+  //   setValue(path, v)
 
   // def unmarshal[A](using reader: confuse.api.ReaderApi#Reader[A]): A = reader.read(this, Nil) match
   //   case Result.Success(a) => a
