@@ -1,0 +1,106 @@
+package clam.dispatch
+
+import clam.getopt
+
+// case class Ctx[Value](
+//   parent: Value,
+//   completionRequested: Boolean
+// )
+// object Ctx:
+//   trait EnvReader[A]:
+//     def read(env: Map[String, String]): A
+
+//   def fromEnv[A](env: Map[String, String])(using reader: EnvReader[A]): Ctx[A] =
+//     Ctx[A](
+//       reader.read(env),
+//       env.contains("ARGPARSE_COMPLETION_REQUESTED")
+//     )
+
+
+trait EnvReader[A]:
+  def read(env: Map[String, String]): A
+
+class Ctx
+object Ctx:
+  def fromEnv(env: Map[String, String]): Ctx = ???
+
+
+// enum Result[+A]:
+//   case Success(a: A)
+//   case ArgumentError(errs: Seq[String]) extends Result[Any]
+
+//   // parser errors
+//   case CommandMissing()
+//   case CommandUnknown()
+
+
+/** A CLI parser
+  *
+  * 1. define getopt parameters
+  * 2. transform getopt result into a scala value
+  * 3. either call an action with that value, or a subcommand with that value
+  *
+  * deals with help and bash completion
+  *
+  */
+case class Parser[Parent, Value](
+  pdefs: Seq[getopt.Param],
+  extract: (Parent, getopt.Result) => Result[Value],
+  action: Option[Value => Result[Any]],
+  callCommand: Option[String => Option[(Ctx, Value, Iterator[String]) => Result[Any]]],
+  listCommands: () => Seq[String]
+) extends ((Ctx, Parent, Iterator[String]) => Result[Any]):
+  require(action.isDefined || callCommand.isDefined)
+
+  def apply(ctx: Ctx, parent: Parent, args: Iterator[String]): Result[Any] =
+    // if ctx.completionRequested then
+    //   sys.error("completion not yet impleented")
+
+    val res = getopt.parse(pdefs, args)
+
+    // if res.unknown == Some("--help") then
+    //   ???
+
+
+    val value: Value = extract(parent, res) match
+      case Result.Success(a) => a
+      case err => return err
+
+    res.unknown match
+      case Some(command, remainder) if callCommand.isDefined =>
+        callCommand.get(command) match
+          case Some(cmd) => cmd(ctx, value, remainder)
+          case None => Result.CommandUnknown()
+      case Some(unknown, _) =>
+        Result.ArgumentError(Seq(s"unknown argument '$unknown'"))
+      case None if action.isDefined =>
+        action.get(value)
+      case None if callCommand.isDefined =>
+        Result.CommandMissing()
+        // Result.ArgumentError(Seq(s"expected command (${listCommands()})"))
+      case _ =>
+        Result.Success(()) // no action or command set
+
+
+  def parseRoot(args: Iterable[String], env: Map[String, String] = sys.env)(using envReader: EnvReader[Parent]) =
+    apply(
+      Ctx.fromEnv(env),
+      envReader.read(env),
+      args.iterator
+    )
+
+
+
+// val git = Command[Git]
+//   .subcommands(`git-commit`)
+
+// val `git-commit` = CommandWithParent[Git, Commit]
+//   .action(commit => ...)
+//   // .subcommands()
+//   // .dynamicSubcommands(
+//   //   call =,
+//   //   list =
+//   // )
+
+
+

@@ -23,7 +23,7 @@ case class Cli(
 ivy"io.crashbox::clam::0.0.1"
 ```
 
-## Structure
+## Code Structure
 
 ```mermaid
 flowchart LR

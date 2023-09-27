@@ -1,8 +1,12 @@
 package clam.readers
 
 
-/** Defines the reader type class as a member of an API trait. This is done so
-  * that typeclass instances can be customized within macro expansions. */
+/** Defines the reader type class as a member of an API trait.
+  *
+  * Making readers path-dependent is done so that implicit lookup for derivation
+  * can be customized in one central place, without resorting to imports in
+  * various places.
+  */
 trait ReaderApi:
 
   trait Reader[A]:
