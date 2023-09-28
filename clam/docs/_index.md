@@ -34,6 +34,17 @@ flowchart LR
   clam.readers --> clam.core
 ```
 
+```mermaid
+flowchart LR
+  clam .-> |export| clam.derivation;
+  clam.derivation --> clam.completion;
+  clam.derivation --> clam.getopt
+  clam.derivation --> clam.dispatch
+  clam.dispatch --> clam.getopt
+  clam.derivation --> clam.readers
+  clam.readers --> clam.core
+```
+
 ## How It Works
 
 Distinguish:

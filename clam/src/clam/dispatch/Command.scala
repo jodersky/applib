@@ -4,8 +4,6 @@ import clam.getopt
 import collection.mutable as m
 import clam.util.Terminal
 
-
-
 class Subcommand[Args](
   val name: String,
   pdefs: Seq[getopt.Param],
@@ -121,3 +119,17 @@ class Subcommand[Args](
       case _: Result.InvocatioError => exit(1)
       case Result.EarlyExit() => exit(0)
       case Result.Success(a) => a
+
+// object Subcommand:
+
+//   class command() extends annotation.StaticAnnotation
+//   class parent() extends annotation.StaticAnnotation
+
+//   @group
+//   def bar(git: Git) = ???
+
+//   @parent("git") // env prefixed with => "GIT_"
+//   @subcommand("foo")
+//   def foo(git: Git)(x: Int) = ???
+
+//   // def findAll[A](container: A)
