@@ -28,23 +28,23 @@ trait StandardParsers extends ParserApi with clam.core.StandardStringReaders:
       case _ =>
         Result.singleError(FieldError.TypeMismatch(path, cfg, sr.typeName))
 
-    given valueParser: Parser[Value] with
-      def parse(value: Value, path: Path): Result[Value] = Result.Success(value)
+  given valueParser: Parser[Value] with
+    def parse(value: Value, path: Path): Result[Value] = Result.Success(value)
 
-    given cfgParser: Parser[Config] with
-      def parse(value: Value, path: Path): Result[Config] = value match
-        case c: Config => Result.Success(c)
-        case other => Result.singleError(FieldError.TypeMismatch(path, value, "config object"))
+  given cfgParser: Parser[Config] with
+    def parse(value: Value, path: Path): Result[Config] = value match
+      case c: Config => Result.Success(c)
+      case other => Result.singleError(FieldError.TypeMismatch(path, value, "config object"))
 
-    given arrParser: Parser[Arr] with
-      def parse(value: Value, path: Path): Result[Arr] = value match
-        case c: Arr => Result.Success(c)
-        case other => Result.singleError(FieldError.TypeMismatch(path, value, "config array"))
+  given arrParser: Parser[Arr] with
+    def parse(value: Value, path: Path): Result[Arr] = value match
+      case c: Arr => Result.Success(c)
+      case other => Result.singleError(FieldError.TypeMismatch(path, value, "config array"))
 
-    given strParser: Parser[Str] with
-      def parse(value: Value, path: Path): Result[Str] = value match
-        case c: Str => Result.Success(c)
-        case other => Result.singleError(FieldError.TypeMismatch(path, value, "config string"))
+  given strParser: Parser[Str] with
+    def parse(value: Value, path: Path): Result[Str] = value match
+      case c: Str => Result.Success(c)
+      case other => Result.singleError(FieldError.TypeMismatch(path, value, "config string"))
 
   given mapReader[K, V, M[K, V] <: Iterable[(K, V)]](
     using kr: Parser[K],
