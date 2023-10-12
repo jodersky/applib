@@ -1,36 +1,25 @@
 package clam
 
 import clam.util.Terminal
-import clam.derivation.Reporter
 
-// Make the default readers and derivation API available as top-level `clam.*`
-// calls.
-export clam.derivation.DefaultApi.*
-export clam.derivation.Result
-export clam.derivation.Reporter
-export clam.derivation.param
+// Note: ideally we'd use only plain exports instead of a package object and
+// inheritance. Because of a compiler bug however, exported mehods can lose
+// their default parameters. Hence, until https://github.com/lampepfl/dotty/issues/17930
+// we'll need to revert to using a package object.
+object `package`:
 
-def parse[A](
-  args: Iterable[String],
-  reporter: Reporter = Reporter(System.out, System.err),
-  terminal: Terminal = Terminal.current()
-)(using cmd: clam.derivation.DerivationApi#Command[A]): Result[A] =
-  val ctx = clam.derivation.ParseCtx(reporter, terminal)
-  cmd.extract(
-    getopt.parse(
-      cmd.parsers.flatMap(_.paramDefs).map(_.parseInfo),
-      args.iterator
-    ),
-    ctx
-  )
+  inline def commandFor[A <: AnyRef](container: A) = ${
+    derivation2.macros.commandFor('container)
+  }
+  inline def commandsFor[A <: AnyRef](container: A) = ${
+    derivation2.macros.commandsFor('container)
+  }
 
-def parseOrExit[A](
-  args: Iterable[String],
-  reporter: Reporter = Reporter(System.out, System.err),
-  terminal: Terminal = Terminal.current(),
-  exit: Int => Nothing = sys.exit
-)(using clam.derivation.DerivationApi#Command[A]): A =
-  parse(args, reporter, terminal) match
-    case Result.Success(a) => a
-    case Result.ArgumentError => exit(2)
-    case Result.EarlyExit => exit(0)
+  export clam.derivation2.param
+  export clam.dispatch.Command
+  export clam.dispatch.Result
+
+  object default
+    extends derivation2.DerivationApi
+    with readers.StandardReaders
+    with derivation2.StandardCompleters

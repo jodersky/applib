@@ -1,4 +1,4 @@
-package clam.derivation
+package clam.dispatch
 
 import clam.completion
 import clam.getopt
@@ -10,18 +10,19 @@ import clam.getopt
   */
 case class ParamDef(
   names: Seq[String],
-  argName: Option[String], // if this is a named param, what should the argument be called in help messages
-  repeats: Boolean,
   description: String,
-  endOfNamed: Boolean,
-  interactiveCompleter: String => Iterable[String],
-  standaloneCompleter: completion.BashCompleter
+  argName: Option[String], // if this is a named param, what should the argument be called in help messages
+  repeats: Boolean = false,
+  endOfNamed: Boolean = false,
+  interactiveCompleter: String => Iterable[String] = _ => Seq(),
+  standaloneCompleter: completion.BashCompleter = completion.BashCompleter.Default
 ):
   require(!names.isEmpty, "a parameter must have at least one name")
 
   def isNamed = names.head.startsWith("-")
   def isFlag = isNamed && argName.isEmpty
 
+  /** CLI grammar */
   def parseInfo = getopt.Param(
     name = names.head,
     aliases = names.tail,
@@ -30,6 +31,7 @@ case class ParamDef(
     endOfNamed = endOfNamed
   )
 
+  /** Information for generating completion */
   def completionInfo: completion.Param = completion.Param(
     names, repeats, isFlag, standaloneCompleter
   )

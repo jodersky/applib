@@ -21,11 +21,10 @@ object Levenshtein:
           dp(i - 1)(j - 1) + cost
         )
 
-
     // The bottom-right cell of the matrix contains the Levenshtein distance
     dp(len1)(len2)
 
-  def closest(str: String, options: Iterable[String]): List[String] =
+  def closest(str: String, options: Iterable[String], max: Int = 2): List[String] =
     import collection.mutable.ListBuffer
 
     val candidates = ListBuffer.empty[String]
@@ -33,8 +32,6 @@ object Levenshtein:
 
     while it.hasNext do
       val candidate = it.next()
-
-      if candidate.startsWith(str) then candidates += candidate
-      else if distance(str, candidate) <= 3 then candidates += candidate
+      if distance(str, candidate) <= max then candidates += candidate
 
     candidates.sorted.result()

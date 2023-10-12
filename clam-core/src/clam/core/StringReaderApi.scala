@@ -150,12 +150,12 @@ trait StandardStringReaders extends StringReaderApi with LowPrioStringReaders:
         case _        => Result.Error(s"expected key=value pair")
     def typeName = s"${kr.typeName}=${vr.typeName}"
 
-  // given optionReader[A](using elementReader: StringReader[A]): StringReader[Option[A]] with
-  //   def read(a: String) =
-  //     elementReader.read(a) match
-  //       case Result.Error(message) => Result.Error(message)
-  //       case Result.Success(value) => Result.Success(Some(value))
-  //   def typeName = elementReader.typeName
+  given optionReader[A](using elementReader: StringReader[A]): StringReader[Option[A]] with
+    def read(a: String) =
+      elementReader.read(a) match
+        case Result.Error(message) => Result.Error(message)
+        case Result.Success(value) => Result.Success(Some(value))
+    def typeName = elementReader.typeName
 
   given durationReader: StringReader[scala.concurrent.duration.Duration] with
     def read(a: String) = try

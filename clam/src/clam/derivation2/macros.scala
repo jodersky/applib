@@ -1,6 +1,9 @@
-package clam.derivation.macros
+package clam.derivation2.macros
 
-import clam.derivation.DerivationApi
+import clam.derivation2.DerivationApi
+import clam.derivation2.Def
+import clam.dispatch.Command
+
 import quoted.Expr
 import quoted.Quotes
 import quoted.Type
@@ -44,7 +47,6 @@ private def call(using qctx: Quotes)(
   val application = accesses.foldLeft(base)((lhs, args) => Apply(lhs, args))
   application.asExpr
 end call
-
 
 private case class DocComment(paragraphs: Iterable[String], params: collection.Map[String, String])
 
@@ -105,66 +107,63 @@ private object DocComment:
     DocComment(mainDoc, params)
   end extract
 
-
-def deriveCommand[Api <: DerivationApi, A: Type](using qctx: Quotes)(api: Expr[DerivationApi]): Expr[DerivationApi#Command[?]] =
+def commandFor[Container: Type](container: Expr[Container])(using qctx: Quotes): Expr[Command] =
   import qctx.reflect.*
 
-  val tpe = TypeRepr.of[A]
-  if !(tpe <:< TypeRepr.of[Product]) then
-    report.error(s"${tpe.show} is not a product type")
-    return '{???}
+  collectApiWithAnnot[Container, DerivationApi#command] match
+    case (method, api) :: Nil =>
+      commandForMethod(api, method)
+    case _ =>
+      report.error("exactly one method must be annotated with @command")
+      '{???}
 
-  deriveCommandSymbol[Api](api, tpe.typeSymbol)
-end deriveCommand
+def commandsFor[Container: Type](container: Expr[Container])(using qctx: Quotes): Expr[List[Command]] =
+  import qctx.reflect.*
 
-private def deriveCommandSymbol[Api <: DerivationApi](using qctx: Quotes)(
+  val cmds = for (method, api) <- collectApiWithAnnot[Container, DerivationApi#command] yield
+    commandForMethod(api, method)
+
+  Expr.ofList(cmds)
+
+// find methods annotated with a given path-dependent annotation and return the
+// parent term
+private def collectApiWithAnnot[Container: Type, Annot: Type](using qctx: Quotes): List[(qctx.reflect.Symbol, Expr[DerivationApi])] =
+  import qctx.reflect.*
+
+  for
+    method <- TypeRepr.of[Container].typeSymbol.methodMembers
+    annot = method.annotations.find(_.tpe <:< TypeRepr.of[Annot])
+    if annot.isDefined
+  yield
+    val TypeRef(apiTerm: TermRef, _) = annot.get.tpe: @unchecked
+    val apiExpr = Ref.term(apiTerm).asExprOf[DerivationApi]
+    method -> apiExpr
+
+private def commandForMethod(using qctx: Quotes)(
   api: Expr[DerivationApi],
-  tsym: qctx.reflect.Symbol
-): Expr[DerivationApi#Command[?]] =
+  method: qctx.reflect.Symbol
+): Expr[Command] =
   import qctx.reflect.*
 
-  val constructor = tsym.primaryConstructor //tsym.companionModule.methodMember("apply").head
-
-  val doc = DocComment.extract(tsym.docstring.getOrElse(""))
-  val parsers = Expr.ofList(paramParsers(api.asTerm, constructor, doc))
+  val doc = DocComment.extract(method.docstring.getOrElse(""))
+  val defs = Expr.ofList(paramDefs(api.asTerm, method, doc))
   '{
     val p = $api
-    new p.Command(
-      $parsers.toVector.asInstanceOf[Vector[p.Parser[_]]],
-      fields =>
-        val s = Seq(fields.toSeq)
-        ${call(using qctx)(constructor, 's)},
-      ${Expr(clam.text.kebabify(tsym.name).toLowerCase())},
-      ${Expr(doc.paragraphs.mkString("\n"))}
+    val cmd = Command(
+      name = ${Expr(method.name)},
+      description = ${Expr(doc.paragraphs.mkString("\n"))},
     )
+    cmd.pdefs ++= p.extraParams
+    cmd.pdefs ++= $defs.flatMap(_.pdefs)
+    cmd.parse = p.parse($defs)
+    cmd.action = Some(
+      (args: Any) =>
+        val s = Seq(args.asInstanceOf[Seq[?]])
+        val r = ${call(using qctx)(method, 's)}
+        clam.dispatch.Result.Success(r)
+    )
+    cmd
   }
-
-def deriveSubcommand[Api <: DerivationApi, A: Type](using qctx: Quotes)(api: Expr[DerivationApi]): Expr[DerivationApi#Subcommand[A]] =
-  import qctx.reflect.*
-  val tpe = TypeRepr.of[A]
-
-  tpe.typeSymbol.children match
-    case Nil =>
-      val flags = tpe.typeSymbol.flags
-      if flags.is(Flags.Enum) || flags.is(Flags.Sealed) then
-        report.error("A subcommand must have at least one child.")
-      else
-        report.error("A subcommand can only be derived for an enum or a sealed trait.")
-      '{???}
-    case children =>
-      val subcommandNames = Expr.ofList(children.map(child => Expr(child.name)))
-      val subcommands = Expr.ofList(
-        children.map(child => deriveCommandSymbol(api, child))
-      )
-
-      '{
-        val p = $api
-        val names = $subcommandNames.map(n => p.scalaToSubcommand(n))
-        val values = $subcommands.asInstanceOf[List[p.Command[A]]]
-        new p.Subcommand[A](
-          names.zip(values).toMap
-        )
-      }
 
 /** Generate a parser for each parameter of a method.
   * @param api A term of an Expr[_ <: DerivationApi]. The type prefix is used
@@ -172,11 +171,11 @@ def deriveSubcommand[Api <: DerivationApi, A: Type](using qctx: Quotes)(api: Exp
   * reusable parsers.
   * @param method the method
 */
-private def paramParsers(using qctx: Quotes)(
+private def paramDefs(using qctx: Quotes)(
   api: qctx.reflect.Term,
   method: qctx.reflect.Symbol,
   doc: DocComment
-): List[Expr[DerivationApi#Parser[Any]]] =
+): List[Expr[Def[Any]]] =
   import qctx.reflect.*
 
   val defaults = getDefaultParams(method)
@@ -185,7 +184,7 @@ private def paramParsers(using qctx: Quotes)(
     val readerType =
       TypeSelect(
         api,
-        "ScalaParam"
+        "Parser"
       ).tpe.appliedTo(List(tpe))
     Implicits.search(readerType) match
       case iss: ImplicitSearchSuccess => Some(iss.tree)
@@ -194,9 +193,9 @@ private def paramParsers(using qctx: Quotes)(
   for param  <- method.paramSymss.flatten yield
     val paramTpe = param.termRef.widenTermRefByName
 
-    val annot = param.getAnnotation(TypeRepr.of[clam.derivation.param].typeSymbol) match
-      case None => '{clam.derivation.param()}
-      case Some(a) => a.asExprOf[clam.derivation.param]
+    val annot = param.getAnnotation(TypeRepr.of[clam.derivation2.param].typeSymbol) match
+      case None => '{clam.derivation2.param()}
+      case Some(a) => a.asExprOf[clam.derivation2.param]
 
     summonParserBuilder(paramTpe) match
       case None =>
@@ -208,7 +207,7 @@ private def paramParsers(using qctx: Quotes)(
           case '[t] =>
             '{
               val p = ${api.asExpr}.asInstanceOf[DerivationApi]
-              val builder = ${term.asExpr}.asInstanceOf[p.ScalaParam[t]]
+              val parser = ${term.asExpr}.asInstanceOf[p.Parser[t]]
               val default = ${
                 defaults.get(param) match
                   case None => '{None}
@@ -216,6 +215,5 @@ private def paramParsers(using qctx: Quotes)(
               }
               val paramdoc = ${Expr(doc.params.getOrElse(param.name, ""))}
 
-              val parser = builder.makeParser(${Expr(param.name)}, default, $annot, paramdoc)
-              parser
+              parser.make(Seq(${Expr(param.name)}), default, $annot, paramdoc)
             }
