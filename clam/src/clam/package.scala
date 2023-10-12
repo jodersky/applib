@@ -9,17 +9,17 @@ import clam.util.Terminal
 object `package`:
 
   inline def commandFor[A <: AnyRef](container: A) = ${
-    derivation2.macros.commandFor('container)
+    derivation.macros.commandFor('container)
   }
   inline def commandsFor[A <: AnyRef](container: A) = ${
-    derivation2.macros.commandsFor('container)
+    derivation.macros.commandsFor('container)
   }
 
-  export clam.derivation2.param
+  export clam.derivation.param
   export clam.dispatch.Command
   export clam.dispatch.Result
 
   object default
-    extends derivation2.DerivationApi
+    extends derivation.DerivationApi
     with readers.StandardReaders
-    with derivation2.StandardCompleters
+    with derivation.StandardCompleters

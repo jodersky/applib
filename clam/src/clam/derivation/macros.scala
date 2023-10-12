@@ -1,7 +1,7 @@
-package clam.derivation2.macros
+package clam.derivation.macros
 
-import clam.derivation2.DerivationApi
-import clam.derivation2.Def
+import clam.derivation.DerivationApi
+import clam.derivation.Def
 import clam.dispatch.Command
 
 import quoted.Expr
@@ -193,9 +193,9 @@ private def paramDefs(using qctx: Quotes)(
   for param  <- method.paramSymss.flatten yield
     val paramTpe = param.termRef.widenTermRefByName
 
-    val annot = param.getAnnotation(TypeRepr.of[clam.derivation2.param].typeSymbol) match
-      case None => '{clam.derivation2.param()}
-      case Some(a) => a.asExprOf[clam.derivation2.param]
+    val annot = param.getAnnotation(TypeRepr.of[clam.derivation.param].typeSymbol) match
+      case None => '{clam.derivation.param()}
+      case Some(a) => a.asExprOf[clam.derivation.param]
 
     summonParserBuilder(paramTpe) match
       case None =>

@@ -1,4 +1,4 @@
-package clam.derivation2
+package clam.derivation
 
 import clam.readers
 
