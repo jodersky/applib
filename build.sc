@@ -6,11 +6,11 @@ val scalaNative = "0.4.14"
 trait Publish extends PublishModule {
   def publishVersion = "0.2.1" // gitVersion()
   def pomSettings = PomSettings(
-    description = "appkit",
+    description = "applib",
     organization = "io.crashbox",
-    url = "https://github.com/jodersky/appkit",
+    url = "https://github.com/jodersky/applib",
     licenses = Seq(License.MIT),
-    versionControl = VersionControl.github("jodersky", "appkit"),
+    versionControl = VersionControl.github("jodersky", "applib"),
     developers = Seq(
       Developer("jodersky", "Jakob Odersky", "https://github.com/jodersky")
     )
@@ -42,6 +42,10 @@ object clam extends Module {
     def scalaNativeVersion = scalaNative
     def moduleDeps = Seq(`clam-core`.native)
     object test extends ScalaTests with Utest
+  }
+  object example extends ScalaModule {
+    def scalaVersion = scala3
+    def moduleDeps = Seq(clam.jvm)
   }
 }
 
@@ -98,6 +102,10 @@ object confuse extends Module {
     object test extends ScalaTests with Utest {
       def nativeLinkStubs = true
     }
+  }
+  object example extends ScalaModule {
+    def scalaVersion = scala3
+    def moduleDeps = Seq(confuse.jvm)
   }
 }
 

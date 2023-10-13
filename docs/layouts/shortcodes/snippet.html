@@ -1,0 +1,15 @@
+{{- $name := .Get "name" -}}
+{{- if eq $name "" -}}
+{{ erroridf "snippet-name" "The %q shortcode requires a name parameter. See %s" .Name .Position}}
+{{- end -}}
+{{- $src := .Get "src" -}}
+{{- if eq $src "" -}}
+{{ erroridf "snippet-src" "The %q shortcode requires a src parameter. See %s" .Name .Position }}
+{{- end -}}
+{{- $content := readFile $src -}}
+{{- $regex := printf "(?s)//\\s*snippet %s\\s*\n(.*?)\\n//\\s*end snippet" $name -}}
+{{- $matches := findRESubmatch $regex $content -}}
+{{- if ne (len $matches) 1 -}}
+{{- erroridf "snippet-nomatch" "No snippet %q found in %q . See %s" $name $src .Position -}}
+{{- end -}}
+{{- index $matches 0 1 | safeHTML -}}

@@ -2,29 +2,20 @@
 title: Confuse
 ---
 
+Parse and map configuration from multiple formats
+
+## Example
 
 ```scala
-case class Foo(
-  name: String,
-  value: Int = 42
-) derives confuse.default.Parser
+{{%snippet src="src/confuse/example/src/main.scala" name="example"%}}
+```
 
-case class Settings(
-  x: Int = 2,
-  data: Map[String, Foo]
-) derives confuse.default.Parser
+## Maven Coordinates
 
-def main(args: Array[String]): Unit =
+Scala 3, JVM and Native
 
-  // read raw config (this cannot fail except for syntax errors in the config files)
-  val config = confuse.read(paths = Seq(os.pwd / "config.yaml"))
-  println("raw config result")
-  println(config.dump())
-
-  // map the config to a scala value or exit, showing any errors
-  val settings = config.parseOrExit[Settings]()
-  println(settings)
-
+```scala
+ivy"io.crashbox::confuse::{{<version>}}"
 ```
 
 ## Code Structure

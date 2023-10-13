@@ -9,18 +9,15 @@ Generate command line parsers for Scala case classes
 ## Example
 
 ```scala
-case class Cli(
-  param1: String = "foo"
-  param2: Int
-) derives clam.default.Command
-
-
+{{% snippet src="src/clam/example/src/main.scala" name="example" %}}
 ```
 
 ## Maven Coordinates
 
+Scala 3, JVM and Native
+
 ```scala
-ivy"io.crashbox::clam::0.0.1"
+ivy"io.crashbox::clam::{{<version>}}"
 ```
 
 ## Code Structure
@@ -28,19 +25,10 @@ ivy"io.crashbox::clam::0.0.1"
 ```mermaid
 flowchart LR
   clam .-> |export| clam.derivation;
-  clam.derivation --> clam.completion;
-  clam.derivation --> clam.getopt
-  clam.derivation --> clam.readers
-  clam.readers --> clam.core
-```
-
-```mermaid
-flowchart LR
-  clam .-> |export| clam.derivation;
-  clam.derivation --> clam.completion;
-  clam.derivation --> clam.getopt
+  clam .-> |export| clam.dispatch;
   clam.derivation --> clam.dispatch
   clam.dispatch --> clam.getopt
+  clam.dispatch --> clam.completion;
   clam.derivation --> clam.readers
   clam.readers --> clam.core
 ```
@@ -98,20 +86,7 @@ Special cases:
     --name a --name b --name c
     ```
 
-
-
   - In case the parameter does not have a default value, it becomes a repeated
     positional parameter. Such a parameter will consume all remaining positional
     arguments.
 
-## Subcommands
-
-
-## Reusable Parameter Groupings
-
-
-```scala
-case class Common(
-
-)
-```

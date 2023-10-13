@@ -1,5 +1,5 @@
-module github.com/jodersky/appkit
+module github.com/jodersky/applib
 
-go 1.21.0
+go 1.19
 
 require github.com/google/docsy v0.7.1 // indirect
