@@ -1,0 +1,15 @@
+#!/bin/sh
+set -o errexit
+
+cd docs
+npm install
+hugo mod get
+hugo
+
+docdir=public/
+git -C "$docdir" init
+git -C "$docdir" config user.name "Joe Doc Champion"
+git -C "$docdir" config user.email "champ@crashbox.io"
+git -C "$docdir" add .
+git -C "$docdir" commit -m "A new version is out!"
+git -C "$docdir" push -f git@github.com:jodersky/applib master:gh-pages
